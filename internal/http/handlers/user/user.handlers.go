@@ -88,3 +88,15 @@ func GetById(storage storage.Storage) http.HandlerFunc {
 		response.WriteJson(w, http.StatusAccepted, map[string]any{"success": "OK", "user": user})
 	}
 }
+
+func GetUsers(storage storage.Storage) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		users, err := storage.GetUsers()
+		if err != nil {
+			response.WriteJson(w, http.StatusInternalServerError, response.GeneralError(http.StatusInternalServerError, err))
+		}
+
+		response.WriteJson(w, http.StatusAccepted, map[string]any{"success": "OK", "users": users})
+
+	}
+}
