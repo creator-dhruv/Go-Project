@@ -9,5 +9,5 @@ type User struct {
 	Age           int       `json:"age" validate:"required"`
 	Created_At    time.Time `json:"created_at"`
 	Updated_At    time.Time `json:"updated_at"`
-	Refresh_Token string    `json:"refresh_token"`
+	Refresh_Token *string   `json:"refresh_token"`
 }

@@ -7,6 +7,7 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/creator-dhruv/Go-Project/internal/storage"
@@ -63,5 +64,27 @@ func New(storage storage.Storage) http.HandlerFunc {
 		}
 		slog.Info("user created successfully")
 		response.WriteJson(w, http.StatusCreated, map[string]any{"success": "OK", "userId": id})
+	}
+}
+
+func GetById(storage storage.Storage) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := r.PathValue("id")
+
+		slog.Info("getting a student id : ", slog.String("id", id))
+
+		Id, err := strconv.ParseInt(id, 10, 64)
+		if err != nil {
+			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(http.StatusBadRequest, err))
+			return
+		}
+
+		user, err := storage.GetUserById(Id)
+		if err != nil {
+			response.WriteJson(w, http.StatusInternalServerError, response.GeneralError(http.StatusInternalServerError, err))
+			return
+		}
+
+		response.WriteJson(w, http.StatusAccepted, map[string]any{"success": "OK", "user": user})
 	}
 }

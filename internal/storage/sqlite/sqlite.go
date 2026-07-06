@@ -2,9 +2,11 @@ package sqlite
 
 import (
 	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/creator-dhruv/Go-Project/internal/config"
+	"github.com/creator-dhruv/Go-Project/internal/types"
 	_ "modernc.org/sqlite"
 )
 
@@ -57,4 +59,25 @@ func (s *Sqlite) CreateUser(name string, email string, age int, created_at time.
 	}
 
 	return id, nil
+}
+
+func (s *Sqlite) GetUserById(id int64) (types.User, error) {
+	stmt, err := s.Db.Prepare(`SELECT id, name, email, age, created_at, updated_at FROM user WHERE id = ? LIMIT 1`)
+	if err != nil {
+		return types.User{}, err
+	}
+
+	defer stmt.Close()
+
+	var user types.User
+
+	err = stmt.QueryRow(id).Scan(&user.Id, &user.Name, &user.Email, &user.Age, &user.Created_At, &user.Updated_At)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return types.User{}, fmt.Errorf("no student found with id %s", fmt.Sprint(id))
+		}
+		return types.User{}, err
+	}
+
+	return user, nil
 }
