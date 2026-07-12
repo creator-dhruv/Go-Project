@@ -10,4 +10,5 @@ type Storage interface {
 	CreateUser(name string, email string, age int, created_at time.Time) (int64, error)
 	GetUserById(id int64) (types.User, error)
 	GetUsers() ([]types.User, error)
+	UpdateUser(id string, name string, email string, age int, updated_at time.Time) (types.User, error)
 }

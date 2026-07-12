@@ -111,3 +111,33 @@ func (s *Sqlite) GetUsers() ([]types.User, error) {
 	return users, nil
 
 }
+
+func (s *Sqlite) UpdateUser(id string, name string, email string, age int, updated_at time.Time) (types.User, error) {
+	stmt, err := s.Db.Prepare("UPDATE user SET name = ?, email = ?, age = ?, updated_at = ? WHERE id = ?")
+	if err != nil {
+		return types.User{}, err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(name, email, age, updated_at, id)
+
+	if err != nil {
+		return types.User{}, err
+	}
+	var user types.User
+	stmtFind, err := s.Db.Prepare(`SELECT id, name, email, age, created_at, updated_at FROM user WHERE id = ?`)
+	if err != nil {
+		return types.User{}, err
+	}
+
+	defer stmtFind.Close()
+
+	err = stmtFind.QueryRow(id).Scan(&user.Id, &user.Name, &user.Email, &user.Age, &user.Created_At, &user.Updated_At)
+
+	if err != nil {
+		return types.User{}, err
+	}
+
+	return user, nil
+
+}

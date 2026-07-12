@@ -100,3 +100,42 @@ func GetUsers(storage storage.Storage) http.HandlerFunc {
 
 	}
 }
+
+func UpdateUser(storage storage.Storage) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := r.PathValue("id")
+		if id == "" {
+			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(http.StatusBadRequest, fmt.Errorf("invalid user ID")))
+			return
+		}
+
+		type User struct {
+			Name  string `json:"name"`
+			Email string `json:"email"`
+			Age   int    `json:"age"`
+		}
+
+		var userData User
+
+		err := json.NewDecoder(r.Body).Decode(&userData)
+		if errors.Is(err, io.EOF) {
+			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(http.StatusBadRequest, fmt.Errorf("empty body")))
+			return
+		}
+
+		if err != nil {
+			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(http.StatusBadRequest, err))
+			return
+		}
+
+		user, err := storage.UpdateUser(id, userData.Name, userData.Email, userData.Age, time.Now())
+		if err != nil {
+			response.WriteJson(w, http.StatusInternalServerError, response.GeneralError(http.StatusInternalServerError, err))
+			return
+		}
+
+		slog.Info("user updated successfully")
+		response.WriteJson(w, http.StatusOK, map[string]any{"success": "OK", "user": user})
+
+	}
+}
