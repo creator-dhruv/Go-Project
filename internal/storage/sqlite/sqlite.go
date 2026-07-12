@@ -141,3 +141,14 @@ func (s *Sqlite) UpdateUser(id string, name string, email string, age int, updat
 	return user, nil
 
 }
+
+func (s *Sqlite) DeleteUser(id string) error {
+	stmt, err := s.Db.Prepare("DELETE FROM user WHERE id = ?")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(id)
+	return err
+}

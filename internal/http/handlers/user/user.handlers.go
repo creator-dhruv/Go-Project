@@ -18,6 +18,10 @@ import (
 
 func New(storage storage.Storage) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			response.WriteJson(w, http.StatusMethodNotAllowed, response.GeneralError(http.StatusMethodNotAllowed, fmt.Errorf("invalid method")))
+			return
+		}
 
 		var user types.User
 
@@ -69,6 +73,10 @@ func New(storage storage.Storage) http.HandlerFunc {
 
 func GetById(storage storage.Storage) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			response.WriteJson(w, http.StatusMethodNotAllowed, response.GeneralError(http.StatusMethodNotAllowed, fmt.Errorf("invalid method")))
+			return
+		}
 		id := r.PathValue("id")
 
 		slog.Info("getting a student id : ", slog.String("id", id))
@@ -91,6 +99,10 @@ func GetById(storage storage.Storage) http.HandlerFunc {
 
 func GetUsers(storage storage.Storage) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			response.WriteJson(w, http.StatusMethodNotAllowed, response.GeneralError(http.StatusMethodNotAllowed, fmt.Errorf("invalid method")))
+			return
+		}
 		users, err := storage.GetUsers()
 		if err != nil {
 			response.WriteJson(w, http.StatusInternalServerError, response.GeneralError(http.StatusInternalServerError, err))
@@ -103,6 +115,10 @@ func GetUsers(storage storage.Storage) http.HandlerFunc {
 
 func UpdateUser(storage storage.Storage) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPut {
+			response.WriteJson(w, http.StatusMethodNotAllowed, response.GeneralError(http.StatusMethodNotAllowed, fmt.Errorf("invalid method")))
+			return
+		}
 		id := r.PathValue("id")
 		if id == "" {
 			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(http.StatusBadRequest, fmt.Errorf("invalid user ID")))
@@ -137,5 +153,29 @@ func UpdateUser(storage storage.Storage) http.HandlerFunc {
 		slog.Info("user updated successfully")
 		response.WriteJson(w, http.StatusOK, map[string]any{"success": "OK", "user": user})
 
+	}
+}
+
+func DeleteUser(storage storage.Storage) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodDelete {
+			response.WriteJson(w, http.StatusMethodNotAllowed, response.GeneralError(http.StatusMethodNotAllowed, fmt.Errorf("invalid method")))
+			return
+		}
+
+		id := r.PathValue("id")
+		if id == "" {
+			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(http.StatusBadRequest, fmt.Errorf("invalid user ID")))
+			return
+		}
+
+		err := storage.DeleteUser(id)
+		if err != nil {
+			response.WriteJson(w, http.StatusInternalServerError, response.GeneralError(http.StatusInternalServerError, err))
+			return
+		}
+
+		slog.Info("user deleted successfully")
+		response.WriteJson(w, http.StatusOK, map[string]any{"success": "OK"})
 	}
 }
